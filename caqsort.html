@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <title>California Q Sort</title>
+    </head>
+
+    <body onload="main()">
+        <h1 id="title">California Q Sort</h1>
+
+        <div id="greetingContainer">
+            <p>Welcome! This tool is meant for educational purposes to help you do the California Q Sort efficiently</p>
+            <h3>Directions:</h3>
+            <p>Once you click start, a list of one or more items will appear on the left.</p>
+            <p>On the right will be the item you are evaluating in relation to the items on the left </p>
+            <p>
+                Items toward the top of the list are ones you see as more characteristic of yourself as opposed <br>
+                to items on the bottom.
+            </p>
+            <p>
+                To insert the item on the right into the list, click on the · Note you may be prompted to do this <br>
+                multiple times for the same item.
+            </p>
+            <p>
+                If you are unsure of an item, you can skip and return to it later using "Skip For Now" button
+                <br> on the right.
+            </p>
+            <p>You can reload the page to restart.</p>
+            
+            <p>Once you have finished, you will be able to download your results as a spreadsheet.</p>
+            <button id = "startButton">Start</button>
+        </div>
+
+        <div id="assessmentContainer">
+            <h3>Directions:</h3>
+            <p>On the right will be the item you are evaluating in relation to the items on the left </p>
+            <p>
+                Items toward the top of the list are ones you see as more characteristic of yourself as opposed <br>
+                to items on the bottom.
+            </p>
+            <p>
+                To insert the item on the right into the list, click on the · Note you may be prompted to do this <br>
+                multiple times for the same item.
+            </p>
+            <p>
+                If you are unsure of an item, you can skip and return to it later using "Skip For Now" button
+                <br> on the right.
+            </p>
+            <p>Once you have finished, you will be able to download your results as a spreadsheet.</p>
+            <p>You can reload the page to restart.</p>
+
+            <h3 id="assessmentProgress">Progress: 1%</h3>
+            <div id="assessmentTable" class="flex flex-space-around border">
+                <div id="processedContainer" class="border width50 flex-vertical"></div>
+                <div id="candidateContainer" class="border width50 flex-vertical flex-center">
+                    <p id="candidateItem"></p>
+                </div>
+                <button id="skipButton">Skip For Now</button>
+            </div>
+        </div>
+
+        <div id="completeContainer">
+            <h3>Congratulations!</h3>
+            <p>You have completed the California Q Sort</p>
+            <p>Click the Download button to get your results! You can reload the window to restart.</p>
+            <button id = "downloadButton">Download</button>
+        </div>
+
+        <footer><p>Updated Jan 31, 2026 | Items adapted from the California Q-Set</p></footer>
+        
+        
+        <!-- ERR P, DO NOT REMOVE -->
+        <p id="errLog" class="err"></p>
+    </body>
+
+
+    <script>
+
+    const ACTIVE_LIST_SIZE = 3;
+    let maxQ;
+    let questionsArr = [
+        "Is critical, skeptical, not easily impressed.",
+        "Is a genuinely dependable and responsible person.",
+        "Has a wide range of interests. (N.B. Superficiality or depth of interest is irrelevant here.)",
+        "Is a talkative individual.",
+        "Behaves in a giving way toward others. (N.B. Regardless of the motivation involved.)",
+        "Is fastidious.",
+        "Favors conservative values in a variety of areas.",
+        "Appears to have a high degree of intellectual capacity. (N.B. Whether actualized or not.) (N.B. Originality is not necessarily assumed.)",
+        "Is uncomfortable with uncertainty and complexities.",
+        "Anxiety and tension find outlet in bodily symptoms. (N.B. If placed high, implies bodily dysfunction; if placed low, implies absence of autonomic arousal.)",
+        "Is protective of those close to them. (N.B. Placement of this term expresses behavior ranging from over-protection through appropriate nurturance to a laissez-faire, under- protective manner.)",
+        "Tends to be self-defensive.",
+        "Is thin-skinned; sensitive to anything that can be construed as criticism or an interpersonal slight.",
+        "Genuinely submissive; accepts domination comfortably.",
+        "Is skilled in social techniques of imaginative play, pretending and humor.",
+        "Is introspective and concerned with self as an object. (N.B. Introspectiveness per se does not imply insight.)",
+        "Behaves in a sympathetic or considerate manner.",
+        "Initiates humor.",
+        "Seeks reassurance from others.",
+        "Has a rapid personal tempo; behaves and acts quickly.",
+        "Arouses nurturant feelings in others.",
+        "Feels a lack of personal meaning in life.",
+        "Extrapunitive; tends to transfer or project blame.",
+        "Prides self on being \"objective,\" rational.",
+        "Tends toward over-control of needs and impulses; binds tensions excessively; delays gratification unnecessarily.",
+        "Is productive; gets things done.",
+        "Shows condescending behavior in relations with others. (N.B. Extreme placement toward uncharacteristic end implies simply an absence of condescension, not necessarily equalitarianism or inferiority.)",
+        "Tends to arouse liking and acceptance in people.",
+        "Is turned to for advice and reassurance.",
+        "Gives up and withdraws where possible in the face of frustration and adversity. (N.B. If placed high, implies generally defeatist; if placed low, implies counteractive.)",
+        "Regards self as physically attractive.",
+        "Seems to be aware of the impression they make on others.",
+        "Is calm, relaxed in manner.",
+        "Over-reactive to minor frustrations; irritable.",
+        "Has warmth; has the capacity for close relationships; compassionate.",
+        "Is subtly negativistic; tends to undermine and obstruct or sabotage.",
+        "Is guileful and deceitful, manipulative, opportunistic.",
+        "Has hostility toward others. (N.B. Basic hostility is intended here; mode of expression is to be indicated by other items.)",
+        "Thinks and associates ideas in unusual ways; has unconventional thought processes.",
+        "Is vulnerable to real or fancied threat, generally fearful.",
+        "Is moralistic. (N.B. Regardless of the particular nature of the moral code.)",
+        "Reluctant to commit self to any definite course of action; tends to delay or avoid action.",
+        "Is facially and/or gesturally expressive.",
+        "Evaluates the motivation of others in interpreting situations. (N.B. Accuracy of evaluation is not assumed.) (N.B. again. Extreme placement in one direction implies preoccupation with motivational interpretation; at the other extreme, the item implies a psychological obtuseness, S does not consider motivational factors.)",
+        "Has a brittle ego-defense system; has a small reserve of integration; would be disorganized and maladadaptive when under stress or trauma.",
+        "Engages in personal fantasy and daydreams, fictional speculations.",
+        "Has a readiness to feel guilt. (N.B. Regardless of whether verbalized or not.)",
+        "Keeps people at a distance; avoids close interpersonal relationships.",
+        "Is basically distrustful of people in general; questions their motivations.",
+        "Is unpredictable and changeable in behavior and attitudes.",
+        "Genuinely values intellectual and cognitive matters. (N.B. Ability or achievement are not implied here.)",
+        "Behaves in an assertive fashion. (N.B. Item 14 reflects underlying submissiveness; this refers to overt behavior.)",
+        "Various needs tend toward relatively direct and uncontrolled expression; unable to delay gratification.",
+        "Emphasizes being with others; gregarious.",
+        "Is self-defeating.",
+        "Responds to humor.",
+        "Is an interesting, arresting person.",
+        "Enjoys sensuous experiences (including touch, taste, smell, physical contact).",
+        "Is concerned with own body and the adequacy of its physiological functioning.",
+        "Has insight into own motives and behavior.",
+        "Creates and exploits dependency in people. (N.B. Regardless of the techniques employed, e.g., punitiveness, over-indulgence.) (N.B. At other end of scale, item implies respecting and encouraging the independence and individuality of others.)",
+        "Tends to be rebellious and non-conforming.",
+        "Judges self and others in conventional terms like \"popularity,\" \"the correct thing to do,\" social pressures, etc.",
+        "Is socially perceptive of a wide range of interpersonal cues.",
+        "Characteristically pushes and tries to stretch limits; sees what they can get away with.",
+        "Enjoys esthetic impressions; is esthetically reactive.",
+        "Is self-indulgent.",
+        "Is basically anxious.",
+        "Is sensitive to anything that can be construed as a demand. (N.B. No implication of the kind of subsequent response is intended here.)",
+        "Behaves in an ethically consistent manner; is consistent with own personal standards.",
+        "Has high aspiration level for self.",
+        "Concerned with own adequacy as a person, either at conscious or unconscious levels. (N.B. A clinical judgment is required here; item 74 reflects subjective satisfaction with self.)",
+        "Tends to perceive many different contexts in sexual terms; eroticizes situations.",
+        "Is subjectively unaware of self-concern; feels satisfied with self.",
+        "Has a clear-cut, internally consistent personality. (N.B. Amount of information available before sorting is not intended here.)",
+        "Tends to project their own feelings and motivations onto others.",
+        "Appears straightforward, forthright, candid in dealing with others.",
+        "Feels cheated and victimized by life; self-pitying.",
+        "Tends to ruminate and have persistent, preoccupying thoughts.",
+        "Interested in members of the opposite sex. (N.B. At opposite end, item implies absence of such interest.)",
+        "Is physically attractive; good-looking. (N.B. The cultural criterion is to be applied here.)",
+        "Has fluctuating moods.",
+        "Able to see to the heart of important problems.",
+        "Is cheerful. (N.B. Extreme placement toward uncharacteristic end of continuum implies unhappiness or depression.)",
+        "Emphasizes communication through action and non-verbal behavior.",
+        "Handles anxiety and conflicts by, in effect, refusing to recognize their presence; repressive or dissociative tendencies.",
+        "Interprets basically simple and clear-cut situations in complicated and particularizing ways.",
+        "Is personally charming.",
+        "Compares self to others. Is alert to real or fancied differences between self and other people.",
+        "Is concerned with philosophical problems; e.g., religions, values, the meaning of life, etc.",
+        "Is power oriented; values power in self and others.",
+        "Has social poise and presence; appears socially at ease.",
+        "If subject is male, 93a. applies; if subject is female, 93b. is to be evaluated. a. Behaves in a masculine style and manner b. Behaves in a feminine style and manner. (N.B. again. The cultural or sub-cultural applies.)",
+        "Expresses hostile feelings directly.",
+        "Tends to proffer advice.",
+        "Values own independence and autonomy.",
+        "Is emotionally bland; has flattened affect.",
+        "Is verbally fluent; can express ideas well.",
+        "Is self-dramatizing; histrionic.",
+        "Does not vary roles; relates to everyone in the same way."
+    ];
+    let processedArray = []; // this is the aggregating list representative of the users sort
+
+    let processedArrayLow = 0; // for binary search active list visibility, idx lowest unchecked elem
+    let processedArrayHigh = 0; // for binary search active list visibility, idx 1 + last unchecked elem
+    let processedArrayBSIdx = 0; // binary search idx
+
+    let questionIdx = 0;
+
+    let startButton;
+    let greetingContainer;
+
+    let assessmentContainer;
+    let assessmentTable;
+
+    let completeContainer;
+    let downloaddButton;
+
+    let processedContainer;
+    let candidateContainer;
+
+    let candidateItem;
+    let skipButton;
+
+    let clicks;
+    let maxClicks;
+
+    function main() {
+        coupleSelectors();
+        initPreTest();
+    }
+
+    function coupleSelectors() {
+        startButton = document.getElementById("startButton");
+        greetingContainer = document.getElementById("greetingContainer");
+        assessmentContainer = document.getElementById("assessmentContainer");
+        processedContainer = document.getElementById("processedContainer");
+        candidateContainer = document.getElementById("candidateContainer");
+        candidateItem = document.getElementById("candidateItem");
+        assessmentTable = document.getElementById("assessmentTable");
+        assessmentProgress = document.getElementById("assessmentProgress");
+        completeContainer = document.getElementById("completeContainer");
+        downloadButton = document.getElementById("downloadButton");
+        skipButton = document.getElementById("skipButton");
+
+        if (!startButton) {
+            err("Start Button Not Binded");
+        }
+
+        if (!greetingContainer) {
+            err("Greeting Container Not Binded");
+        }
+
+        if (!assessmentContainer) {
+            err("Assessment Container Not Binded");
+        }
+
+        if (!processedContainer) {
+            err("Processed Container Not Binded");
+        }
+
+        if (!candidateContainer) {
+            err("Candidate Container Not Binded");
+        }
+        
+        if (!candidateItem) {
+            err("Candidate Item Not Binded");
+        }
+
+        if (!assessmentTable) {
+            err("Assessment Table Not Binded");
+        }
+
+        if (!assessmentProgress) {
+            err("Assessment Progress Not Binded");
+        }
+
+        if (!completeContainer) {
+            err("Complete Container Not Binded");
+        }
+
+        if (!downloadButton) {
+            err("Download Button Not Binded");
+        }
+
+        if (!skipButton) {
+            err("Skip Button Not Binded");
+        }
+
+        startButton.onclick = startTest;
+        downloadButton.onclick = downloadVisualQSortCSV;
+        skipButton.onclick = skipItem;
+    }
+
+    function initPreTest() {
+        hideElement(assessmentContainer);
+        hideElement(completeContainer);
+    }
+
+    function startTest() {
+        maxQ = questionsArr.length;
+        maxClicks = questionsArr.length;
+        clicks = 1;
+
+        hideElement(greetingContainer);
+        showElement(assessmentContainer);
+
+        questionsArr = shuffleArray(questionsArr);
+
+        questionIdx = 0;
+        processedArray.push(questionsArr[questionIdx]);
+
+        beginQuestionFrame();
+    }
+
+    function downloadVisualQSortCSV() {
+        const formattedData = getQSortResults(processedArray).reverse();
+        
+        const maxItems = 18;
+        
+        let csvContent = "Most Uncharacteristic,Quite Uncharacteristic,Fairly Uncharacteristic,Somewhat Uncharacteristic,Neutral,Somewhat Characteristic,Fairly Characteristic,Quite Characteristic,Most Characteristic\n";
+
+        for (let row = 0; row < maxItems; row++) {
+            let rowCells = [];
+            
+            for (let col = 0; col < 9; col++) {
+                const item = formattedData[col].items[row];
+                
+                if (item) {
+                    rowCells.push(`"${item.replace(/"/g, '""')}"`);
+                } else {
+                    rowCells.push("");
+                }
+            }
+            csvContent += rowCells.join(",") + "\n";
+        }
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "cali_qsort_bell_curve.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function getQSortResults(sortedArray) {
+        const distribution = [5, 8, 12, 16, 18, 16, 12, 8, 5];
+        const labels = [
+            "Most Characteristic",
+            "Quite Characteristic",
+            "Fairly Characteristic",
+            "Somewhat Characteristic",
+            "Relatively Neutral",
+            "Somewhat Uncharacteristic",
+            "Fairly Uncharacteristic",
+            "Quite Uncharacteristic",
+            "Most Uncharacteristic"
+        ];
+
+        let results = [];
+        let currentIdx = 0;
+
+        distribution.forEach((count, i) => {
+            const pile = sortedArray.slice(currentIdx, currentIdx + count);
+            results.push({
+                category: labels[i],
+                items: pile
+            });
+            currentIdx += count;
+        });
+
+        return results;
+    }
+
+    function finished() {
+        hideElement(assessmentContainer);
+        showElement(completeContainer);
+    }
+
+    function beginQuestionFrame() {
+        questionIdx++;
+
+        if (questionIdx >= maxQ) {
+            finished();
+            return;
+        }
+
+        candidateItem.innerText = questionsArr[questionIdx];
+
+        processedArrayLow = 0;
+        processedArrayHigh = processedArray.length;
+
+        binarySearch();
+    }
+
+    let showFrom;
+    let showTo;
+
+    function binarySearch() {
+        processedContainer.innerHTML = "";
+
+        processedArrayBSIdx = processedArrayLow + Math.floor((processedArrayHigh - processedArrayLow) / 2);
+        
+        showFrom =  processedArrayBSIdx - Math.floor(ACTIVE_LIST_SIZE / 2);
+        showTo = processedArrayBSIdx + Math.floor(ACTIVE_LIST_SIZE / 2) + 1;
+        if (showFrom < processedArrayLow) showFrom = processedArrayLow;
+        if (showTo >= processedArrayHigh) showTo = processedArrayHigh;
+
+        let showItemIdx = showFrom;
+        
+        let background = "lightblue";
+
+        while (showItemIdx < showTo) {
+            const k = showItemIdx;
+
+            const btn = document.createElement('button');
+            btn.className = "invisible-button activeListElem";
+            btn.textContent = "·";
+            btn.onclick = () => { submitItem(k) };
+
+            const p = document.createElement('p');
+            p.className = "activeListElem " + background;
+            p.textContent = processedArray[k];
+
+            processedContainer.appendChild(btn);
+            processedContainer.appendChild(p);
+            
+            if (background == "lightblue") {
+                background = "lightgrey";
+            } else {
+                background = "lightblue";
+            }
+            
+            showItemIdx++;
+        }
+        const k = showItemIdx;
+        const btn = document.createElement('button');
+        btn.className = "invisible-button activeListElem";
+        btn.textContent = "·";
+        processedContainer.appendChild(btn);
+        btn.onclick = () => { submitItem(k) };
+    }
+
+    function skipItem() {
+        maxQ++;
+        questionsArr.push(questionsArr[questionIdx]);
+
+        setTimeout(() => {
+            beginQuestionFrame();
+        }, 0);
+
+        assessmentTable.classList.add("pulse-active-orange");
+
+        setTimeout(() => {
+            assessmentTable.classList.remove('pulse-active-orange');
+        }, 700);
+    }
+
+    function submitItem(idx) {
+        if ((idx > showFrom && idx < showTo) || processedArrayLow == idx 
+                || processedArrayHigh == idx) {
+            insert(idx);
+        } else if (idx == showFrom) {
+            processedArrayHigh = showFrom;
+            binarySearch();
+        } else {
+            processedArrayLow = showTo;
+            binarySearch();
+        }
+    }
+
+    function insert(idx) {
+        clicks++;
+        processedArray.splice(idx, 0, questionsArr[questionIdx]);
+        assessmentProgress.innerText = "Progress: " + (clicks / maxClicks * 100).toFixed(0) + "%";
+        setTimeout(() => {
+            beginQuestionFrame();
+        }, 0);
+        
+        assessmentTable.classList.add("pulse-active");
+        setTimeout(() => {
+            assessmentTable.classList.remove('pulse-active');
+        }, 700);
+    } 
+
+    function shuffleArray(arr) {
+        for (let i = 0; i < arr.length; i++) {
+            let j = Math.floor(Math.random() * (arr.length - i)) + i;
+            let tmp = arr[j];
+            arr[j] = arr[i];
+            arr[i] = tmp; 
+        }
+        return arr;
+    }
+
+
+    function hideElement(element) {
+        element.classList.add("hide");
+    }
+
+    function showElement(element) {
+        element.classList.remove("hide");
+    }
+    /**
+     * error function, do not change
+    */
+    function err(errText) {
+        document.getElementById("errLog").innerText += errText + "\n";
+    }
+
+    </script>
+
+    <style>
+        *{
+            position: relative;
+            font-family: sans-serif;
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+
+            min-height: calc(100vh - 50px);
+            padding-bottom: 50px;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 10px;
+        }
+
+        .flex {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .flex-vertical {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .flex-center {
+            justify-content: center;
+        }
+
+        .flex-space-around {
+            justify-content: space-around;
+        }
+
+        .flex-grow {
+            flex-grow: 1;
+        }
+
+        .border {
+            border: 1px solid black;
+        }
+
+        #assessmentContainer {
+            margin: 10px;
+        }
+
+        #candidateItem {
+            text-align: center;
+        }
+
+        .invisible-button:hover {
+            background-color: blanchedalmond;
+        }
+
+        .width50 {
+            width: 50%;
+        }
+
+        #title {
+            padding: 3px;
+        }
+
+        p {
+            padding: 5px;
+        }
+
+        h3 {
+            padding: 3px;
+        }
+
+        button {
+            margin: 3px;
+        }
+
+        .invisible-button {
+            background: none;
+            color: inherit;
+            border: none;
+            padding: 0;
+            font: inherit;
+            cursor: pointer;
+            outline: inherit;
+
+            width: 100%;
+            height: 25px;
+        }
+
+        .activeListElem {
+            padding-top: 0;
+            padding-bottom: 0;
+            margin: 0;
+        }
+
+        .lightblue {
+            background-color: lightblue;
+        }
+
+        .lightgrey {
+            background-color: lightgray;
+        }
+
+        @keyframes greenPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(46, 204, 113, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+            }
+        }
+
+        .pulse-active {
+            animation: greenPulse 0.6s ease-out;
+        }
+
+        @keyframes orangePulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(204, 178, 46, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(204, 178, 46, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(204, 178, 46, 0);
+            }
+        }
+
+        .pulse-active-orange {
+            animation: orangePulse 0.6s ease-out;
+        }
+
+
+
+
+
+
+
+        .err {
+            background-color: red;
+            padding: 0;
+            margin: 0;
+        }
+
+
+        .hide {
+            display: none;
+        }
+
+        
+        
+        
+    </style>
+</html>
